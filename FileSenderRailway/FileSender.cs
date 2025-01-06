@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace FileSenderRailway;
@@ -25,39 +26,23 @@ public class FileSender
 
     public IEnumerable<FileSendResult> SendFiles(FileContent[] files, X509Certificate certificate)
     {
-        foreach (var file in files)
-        {
-            string errorMessage = null;
-            try
-            {
-                Document doc = recognizer.Recognize(file);
-                if (!IsValidFormatVersion(doc))
-                    throw new FormatException("Invalid format version");
-                if (!IsValidTimestamp(doc))
-                    throw new FormatException("Too old document");
-                doc.Content = cryptographer.Sign(doc.Content, certificate);
-                sender.Send(doc);
-            }
-            catch (FormatException e)
-            {
-                errorMessage = "Can't prepare file to send. " + e.Message;
-            }
-            catch (InvalidOperationException e)
-            {
-                errorMessage = "Can't send. " + e.Message;
-            }
-            yield return new FileSendResult(file, errorMessage);
-        }
+        return files.Select(file =>
+            new FileSendResult(file, PrepareFileToSend(file, certificate)
+                .Then(doc => sender.Send(doc)).Error));
     }
 
-    private bool IsValidFormatVersion(Document doc)
-    {
-        return doc.Format == "4.0" || doc.Format == "3.1";
-    }
+    private Result<Document> PrepareFileToSend(FileContent file, X509Certificate certificate) =>
+        recognizer.Recognize(file)
+            .Then(x => IsValidTimestamp(x))
+            .Then(x => IsValidFormatVersion(x))
+            .Then(x => x with { Content = cryptographer.Sign(x.Content, certificate) })
+            .RefineError("Can't prepare file to send");
 
-    private bool IsValidTimestamp(Document doc)
-    {
-        var oneMonthBefore = now().AddMonths(-1);
-        return doc.Created > oneMonthBefore;
-    }
+
+    private static Result<Document> IsValidFormatVersion(Result<Document> doc) =>
+        doc.Value.Format is "4.0" or "3.1" ? doc : Result.Fail<Document>("Invalid format version");
+
+
+    private Result<Document> IsValidTimestamp(Result<Document> doc) =>
+        doc.Value.Created > now().AddMonths(-1) ? doc : Result.Fail<Document>("Invalid timestamp");
 }

@@ -60,22 +60,26 @@ public static class Result
 
     public static Result<TOutput> Then<TInput, TOutput>(
         this Result<TInput> input,
-        Func<TInput, TOutput> continuation)
-    {
-        throw new NotImplementedException();
-    }
+        Func<TInput, TOutput> continuation) =>
+        input.Then(x => Of(() => continuation(x)));
 
     public static Result<TOutput> Then<TInput, TOutput>(
         this Result<TInput> input,
-        Func<TInput, Result<TOutput>> continuation)
-    {
-        throw new NotImplementedException();
-    }
+        Func<TInput, Result<TOutput>> continuation) =>
+        input.IsSuccess ? continuation(input.Value) : Fail<TOutput>(input.Error);
 
     public static Result<TInput> OnFail<TInput>(
         this Result<TInput> input,
         Action<string> handleError)
     {
-        throw new NotImplementedException();
+        if (input.Error != null)
+            handleError.Invoke(input.Error);
+        return input;
     }
+
+    public static Result<T> ReplaceError<T>(this Result<T> input, Func<string, string> replaceFunction) =>
+        input.IsSuccess ? input : Fail<T>(replaceFunction(input.Error));
+
+    public static Result<T> RefineError<T>(this Result<T> input, string postingResultsToDb) =>
+        input.IsSuccess ? input : Fail<T>(string.Join(". ", postingResultsToDb, input.Error));
 }
