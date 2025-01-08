@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TagCloudCreator</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .topbar {
+            display: flex;
+            background: rgb(240, 240, 240);
+        }
+        
+        .canvas {
+            border: 1px solid black;
+        }
+
+        .dropbtn {
+            color: black;
+            padding: 8px;
+            font-size: 16px;
+            border: none;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 6px 8px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: rgb(213, 213, 213);
+        }
+
+        .settings-modal {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background: #dcdcdc;
+        }
+
+        .property-grid {
+            border-collapse: collapse;
+            padding: 16px;
+        }
+
+        .property-row {
+            border: 1px black solid;
+        }
+
+        .property-cell {
+            width: 150px;
+        }
+
+        .property-btn {
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="dropdown">
+        <button class="dropbtn">Настройки</button>
+        <div class="dropdown-content">
+            <a href="#" id="image-settings-btn">Изображение</a>
+            <a href="#" id="palette-settings-btn">Палитра</a>
+            <a href="#" id="logic-settings-btn">Логика</a>
+        </div>
+    </div>
+
+    <div class="dropdown">
+        <input type="file" id="words-file-selector" accept=".txt" hidden/>
+        <label for="words-file-selector" class="dropbtn">Загрузить файл</label>
+    </div>
+
+    <div class="dropdown">
+        <button id="draw-btn" class="dropbtn">
+            Нарисовать
+        </button>
+    </div>
+
+    <div class="dropdown">
+        <a id="download-btn" class="dropbtn" style="cursor:default">
+            Скачать изображение
+        </a>
+    </div>
+</nav>
+
+<div class="settings-modal hidden" id="image-setting-modal">
+    <div class="modal-body">
+        <table class="property-grid">
+            <tr class="property-row">
+                <td class="property-cell"><span>Width</span></td>
+                <td class="property-cell"><label><input type="number" id="width-property" min="100" max="10000"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>Height</span></td>
+                <td class="property-cell"><label><input type="number" id="height-property" min="100" max="10000"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>FontFamily</span></td>
+                <td class="property-cell">
+                    <select id="fontFamily-property">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Bahnschrift">Bahnschrift</option>
+                        <option value="Courier New">Courier New</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>Max Font Size</span></td>
+                <td class="property-cell"><label><input type="number" id="maxSize-property" min="8" max="50" value="50"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>Min Font Size</span></td>
+                <td class="property-cell"><label><input type="number" id="minSize-property" min="8" max="50" value="8"/></label></td>
+            </tr>
+        </table>
+        <button id="image-setting-btn" class="property-btn">OK</button>
+    </div>
+</div>
+
+<div class="settings-modal hidden" id="error-modal">
+    <div class="modal-body">
+        Error Occured
+        <span id="error-message">The log table has overflowed. - Record "Log record number 5" was not logged.</span>
+        <button id="error-setting-btn" class="property-btn">OK</button>
+    </div>
+</div>
+
+<div class="settings-modal hidden" id="palette-setting-modal">
+    <div class="modal-body">
+        <table class="property-grid">
+            <tr class="property-row">
+                <td class="property-cell"><span>FontColor</span></td>
+                <td class="property-cell"><label><input type="color" id="font-color-property"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>BackgroundColor</span></td>
+                <td class="property-cell"><label><input type="color" id="background-color-property"/></label></td>
+            </tr>
+        </table>
+        <button id="palette-setting-btn" class="property-btn">OK</button>
+    </div>
+</div>
+
+<div class="settings-modal hidden" id="logic-setting-modal">
+    <div class="modal-body">
+        <table class="property-grid">
+            <tr class="property-row">
+                <td class="property-cell"><span>Radius Step</span></td>
+                <td class="property-cell"><label><input type="number" step="any" id="radiusStep-property"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>Angle Step</span></td>
+                <td class="property-cell"><label><input type="number" step="any" id="angleStep-property"/></label></td>
+            </tr>
+
+            <tr class="property-row">
+                <td class="property-cell"><span>Tag Cloud Shape</span></td>
+                <td class="property-cell">
+                    <select id="tagCloudShape-property">
+                        <option value="1">Spiral</option>
+                        <option value="2">Astroid</option>
+                    </select>
+                </td>
+            </tr>
+            <tr class="property-row">
+                <td class="property-cell"><span>Excluded Words</span></td>
+                <td class="property-cell"><label><input type="text" step="any" id="excludedWords-property"/></label></td>
+            </tr>
+        </table>
+        <button id="logic-setting-btn" class="property-btn">OK</button>
+    </div>
+</div>
+
+<canvas class="canvas">
+
+</canvas>
+
+</body>
+
+<script>
+    const errorModal = document.querySelector("#error-modal");
+    const errorSpan = document.querySelector("#error-message");
+    const errorBtn = document.querySelector("#error-setting-btn")
+
+    const showErrorModal = (errorMessage) => {
+        errorSpan.innerHTML = errorMessage;
+        errorModal.classList.remove("hidden");
+    }
+
+    const closeErrorModal = () => {
+        errorModal.classList.add("hidden");
+    }
+
+    errorBtn.addEventListener("click", function (e) {
+        closeErrorModal();
+    });
+
+    const get = async (url) => {
+        try {
+            const response = await fetch(url, {
+                method: "GET", credentials: "same-origin",
+            });
+
+            if (response.ok) {
+                return response.json();
+            }
+
+            showErrorModal(await response.text());
+        } catch (error) {
+            showErrorModal(await error.text());
+        }
+    }
+
+    const put = async (url, obj) => {
+        try {
+            const response = await fetch(url, {
+                method: "PUT", credentials: "same-origin",
+                body: JSON.stringify(obj)
+            });
+
+            if (response.ok) {
+                return response.json();
+            }
+
+            showErrorModal(await response.text());
+        } catch (error) {
+            showErrorModal(await error.text());
+        }
+    }
+
+    const post = async (url, obj) => {
+        try {
+            const response = await fetch(url, {
+                method: "POST", credentials: "same-origin",
+                body: JSON.stringify(obj)
+            });
+            if (response.ok) {
+                return response.json();
+            }
+
+            showErrorModal(await response.text());
+        } catch (error) {
+            showErrorModal(await error.text());
+        }
+    }
+
+    const imageSettingsModal = document.querySelector("#image-setting-modal");
+    const heightPropertyInput = document.querySelector("#height-property");
+    const widthPropertyInput = document.querySelector("#width-property");
+    const fontFamilyPropertyInput = document.querySelector("#fontFamily-property");
+    const maxSizePropertyInput = document.querySelector("#maxSize-property");
+    const minSizePropertyInput = document.querySelector("#minSize-property");
+    const imagePropertyBtn = document.querySelector("#image-setting-btn");
+
+    const paletteSettingsModal = document.querySelector("#palette-setting-modal");
+    const backgroundColorInput = document.querySelector("#background-color-property");
+    const fontColorInput = document.querySelector("#font-color-property");
+    const palettePropertyBtn = document.querySelector("#palette-setting-btn");
+
+    const canvas = document.querySelector(".canvas");
+    const ctx = canvas.getContext("2d");
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    ctx.translate(canvasWidth / 2, canvasHeight / 2);
+
+    const drawBtn = document.querySelector("#draw-btn");
+    const inputElement = document.querySelector("#words-file-selector");
+    const downloadBtn = document.querySelector("#download-btn");
+
+    drawBtn.addEventListener("click", () => {
+        getWords(inputElement.files[0]);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+        downloadImage();
+    });
+
+    const getWords = (inputFile) => {
+        if (inputFile === undefined) {
+            showErrorModal('Выберите текстовый файл!');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const fileContent = {
+                Words: e.target.result
+            }            
+            post("/getWords", fileContent) // Отправляем текст, а не inputFile
+                .then(words1 => draw(words1))
+                .catch(error => {
+                    if (error.message) { // message, а не Message
+                        showErrorModal(error.message);
+                    } else {
+                        showErrorModal("Произошла неизвестная ошибка."); // Обработка других ошибок
+                    }
+                });
+        };
+
+        reader.onerror = (error) => {
+            showErrorModal("Ошибка чтения файла: " + error);
+        };
+
+        reader.readAsText(inputFile);
+    }
+
+    const draw = (words) => {
+        clearCanvas();
+        fillBackgroundColor();
+        let fontColor = hexToRgb(fontColorInput.value);
+        words.forEach(word => {
+            ctx.font = `${word.Font.Size}px ${word.Font.Family.Name}`;
+            ctx.fillStyle = `rgb(${fontColor.R},${fontColor.G},${fontColor.B})`;
+            ctx.fillText(word.Value, word.Location.X, word.Location.Y);
+        });
+    }
+
+    const clearCanvas = () => {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
+
+    const fillBackgroundColor = () => {
+        let backgroundColor = hexToRgb(backgroundColorInput.value);
+        let backgroundWidth = widthPropertyInput.value;
+        let backgroundHeight = heightPropertyInput.value; 
+        ctx.fillStyle = `rgb(${backgroundColor.R},${backgroundColor.G},${backgroundColor.B})`;
+        ctx.fillRect(-backgroundWidth / 2, -backgroundHeight / 2, backgroundWidth * 2, backgroundHeight * 2);
+    }
+
+    const downloadImage = () => {
+        const dataUrl = canvas.toDataURL('image/png');
+        downloadBtn.href = dataUrl;
+        downloadBtn.download = 'myCanvasImage.png';
+    }
+
+    const componentToHex = (c) => {
+        const hex = c.toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+    }
+
+    const rgbToHex = (r, g, b) => {
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
+        if (result) {
+            const a = 255;
+            const r = parseInt(result[1], 16);
+            const g = parseInt(result[2], 16);
+            const b = parseInt(result[3], 16);
+            return { A: a, R: r, G: g, B: b };
+        } else {
+            return null;
+        }
+    }
+
+    let imageSettings = undefined;
+    let paletteSettings = undefined;
+    let logicSettings = undefined;
+
+    get("/settings")
+        .then(response => {
+            imageSettings = response;
+            widthPropertyInput.value = imageSettings.Width;
+            heightPropertyInput.value = imageSettings.Height;
+            canvas.width = imageSettings.Width;
+            canvas.height = imageSettings.Height;
+            fontFamilyPropertyInput.value = imageSettings.FontFamily.Name;
+            maxSizePropertyInput.value = imageSettings.MaxFontSize;
+            minSizePropertyInput.value = imageSettings.MinFontSize;
+        })
+        .catch(error => {
+            if (error.Message) {
+                showErrorModal(error.Message);
+            }
+        });
+
+    get("/palette")
+        .then(response => {
+            paletteSettings = response;
+            fontColorInput.value = rgbToHex(paletteSettings.FontColor.R, paletteSettings.FontColor.G, paletteSettings.FontColor.B);
+            backgroundColorInput.value = rgbToHex(paletteSettings.BackgroundColor.R, paletteSettings.BackgroundColor.G, paletteSettings.BackgroundColor.B);
+        })
+        .catch(error => {
+            if (error.Message) {
+                showErrorModal(error.Message);
+            }
+        });
+
+    get("/logic")
+        .then(response => {
+            logicSettings = response;
+            radiusStepPropertyInput.value = logicSettings.RadiusStep;
+            angleStepPropertyInput.value = logicSettings.AngleStep;
+            tagCloudShapePropertyInput.value = logicSettings.PointGeneratorType;
+            excludedWordsPropertyInput.value = Array.from(logicSettings.Exclusions).join(" ");
+        })
+        .catch(error => {
+            if (error.Message) {
+                showErrorModal(error.Message);
+            }
+        });
+
+    const closePaletteSettingModal = () => {
+        paletteSettingsModal.classList.add("hidden")
+    }
+
+    const openPaletteSettingModal = () => {
+        paletteSettingsModal.classList.remove("hidden");
+    }
+
+    palettePropertyBtn.addEventListener("click", function (_) {
+        closePaletteSettingModal();
+    });
+
+    const paletteSettingsBtn = document.querySelector("#palette-settings-btn");
+    paletteSettingsBtn.addEventListener("click", (_) => openPaletteSettingModal());
+
+    const closeImageSettingModal = () => {
+        imageSettingsModal.classList.add("hidden");
+    }
+
+    const openImageSettingModal = () => {
+        imageSettingsModal.classList.remove("hidden");
+    }
+
+    const updateImageSettings = () => {
+        closeImageSettingModal();
+        imageSettings.Width = Number(widthPropertyInput.value);
+        imageSettings.Height = Number(heightPropertyInput.value);
+        canvas.width = imageSettings.Width;
+        canvas.height = imageSettings.Height;
+        imageSettings.FontFamily = nameToFontFamily(fontFamilyPropertyInput.value);
+        imageSettings.MaxFontSize = Number(maxSizePropertyInput.value);
+        imageSettings.MinFontSize = Number(minSizePropertyInput.value);
+        put("/settings", imageSettings)
+            .catch(error => {
+                if (error.Message) {
+                    showErrorModal(error.Message);
+                }
+            });
+    }
+    
+    const nameToFontFamily = (fontFamilyName) => {
+        return {
+            fontFamily: fontFamilyName
+        };
+    }
+
+    imageSettingsModal.addEventListener("click", function (e) {
+        if (e.target !== imageSettingsModal) {
+            return;
+        }
+        updateImageSettings();
+    });
+
+    imagePropertyBtn.addEventListener("click", function (_) {
+        updateImageSettings();
+    });
+
+    const imageSettingsBtn = document.querySelector("#image-settings-btn");
+    imageSettingsBtn.addEventListener("click", (_) => openImageSettingModal());
+
+    const logicSettingsModal = document.querySelector("#logic-setting-modal");
+    const radiusStepPropertyInput = document.querySelector("#radiusStep-property");
+    const angleStepPropertyInput = document.querySelector("#angleStep-property");
+    const tagCloudShapePropertyInput = document.querySelector("#tagCloudShape-property");
+    const excludedWordsPropertyInput = document.querySelector("#excludedWords-property");
+    const logicPropertyBtn = document.querySelector("#logic-setting-btn");
+
+    const logicSettingsBtn = document.querySelector("#logic-settings-btn");
+    logicSettingsBtn.addEventListener("click", (_) => openLogicSettingModal());
+
+    const closeLogicSettingModal = () => {
+        logicSettingsModal.classList.add("hidden");
+    }
+
+    const openLogicSettingModal = () => {
+        logicSettingsModal.classList.remove("hidden");
+    }
+
+    const updateLogicSettings = () => {
+        closeLogicSettingModal();
+        logicSettings.RadiusStep = Number(radiusStepPropertyInput.value);
+        logicSettings.AngleStep = Number(angleStepPropertyInput.value);
+        logicSettings.PointGeneratorType = Number(tagCloudShapePropertyInput.value);
+        logicSettings.Exclusions = multiSplit(excludedWordsPropertyInput.value, [',', ' ', ';']);
+
+        put("/logic", logicSettings)
+            .catch(error => {
+                if (error.Message) {
+                    showErrorModal(error.Message);
+                }
+            });
+    }
+
+    const multiSplit = (str, delimeters) => {
+        let result = [str];
+        if (typeof (delimeters) == 'string')
+            delimeters = [delimeters];
+        while (delimeters.length > 0) {
+            for (let i = 0; i < result.length; i++) {
+                let tempSplit = result[i].split(delimeters[0]);
+                result = result.slice(0, i).concat(tempSplit).concat(result.slice(i + 1));
+            }
+            delimeters.shift();
+        }
+        return result.filter(item => item.trim() !== '');
+    }
+
+    logicSettingsModal.addEventListener("click", function (e) {
+        if (e.target !== logicSettingsModal) {
+            return;
+        }
+        updateLogicSettings();
+    });
+
+    logicPropertyBtn.addEventListener("click", function (_) {
+        updateLogicSettings();
+    });
+</script>
+</html>
