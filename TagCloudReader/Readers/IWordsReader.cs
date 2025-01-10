@@ -1,7 +1,9 @@
+using ResultTools;
+
 namespace TagCloudReader.Readers;
 
 public interface IWordsReader
 {
-    IEnumerable<string> ReadFromTxt(string path);
-    IEnumerable<string> ReadFromString(string words);
+    Result<IEnumerable<string>> ReadFromTxt(Result<string> path);
+    Result<IEnumerable<string>> ReadFromString(Result<string> words);
 }

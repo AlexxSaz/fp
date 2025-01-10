@@ -21,7 +21,7 @@ public class GetWordsAction(
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
         var words = reader.ReadFromString(wordContainer!.Words);
-        var tagsInCloud = tagCloudPainter.GetTagsToPrintImage(words);
+        var tagsInCloud = tagCloudPainter.GetTagsToPrintImage(words.GetValueOrThrow());
 
         JsonSerializer.Serialize(outputStream, tagsInCloud, options: _jsonSerializerOptions);
         return (int)HttpStatusCode.OK;

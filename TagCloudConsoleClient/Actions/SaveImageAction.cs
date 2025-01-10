@@ -23,7 +23,7 @@ public class SaveImageAction(
         var palette = paletteProvider.GetPalette();
 
         var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
-        var tagsInCloud = tagCloudPainter.GetTagsToPrintImage(words);
+        var tagsInCloud = tagCloudPainter.GetTagsToPrintImage(words.GetValueOrThrow());
 
         const int rectangleOutline = 1;
         using var bitmap = new Bitmap(
