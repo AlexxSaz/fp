@@ -5,6 +5,5 @@ namespace TagCloud.Logic.CloudContainers;
 
 public interface ITagCloud
 {
-    ICloudLayout CloudLayout { get; }
-    IReadOnlyCollection<IWordTag> GetTags(IEnumerable<string> words);
+    IReadOnlyCollection<StandardWordTag> GetTags(IEnumerable<string> words);
 }

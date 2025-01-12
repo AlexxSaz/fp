@@ -1,8 +1,9 @@
 ﻿using System.Drawing;
+using ResultTools;
 
 namespace TagCloud.Logic.CloudLayouts;
 
 public interface ICloudLayout
 {
-    public Rectangle PutNextRectangle(Size rectangleSize);
+    public Rectangle PutNextRectangle(Result<Size> rectangleSize);
 }

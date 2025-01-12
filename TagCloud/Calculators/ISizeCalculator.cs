@@ -4,5 +4,5 @@ namespace TagCloud.Calculators;
 
 public interface ISizeCalculator
 {
-    IReadOnlyCollection<IWordTag> Calculate(IEnumerable<string> words);
+    IReadOnlyDictionary<string, int> Calculate(IEnumerable<string> words);
 }

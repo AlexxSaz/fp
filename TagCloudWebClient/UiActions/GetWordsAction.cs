@@ -1,13 +1,13 @@
 ﻿using System.Net;
 using System.Text.Json;
-using TagCloud.TagCloudPainters;
+using TagCloud.Logic.CloudContainers;
 using TagCloudReader.Readers;
 using TagCloudWebClient.JsonConverters;
 
 namespace TagCloudWebClient.UiActions;
 
 public class GetWordsAction(
-    ITagCloudPainter tagCloudPainter,
+    ITagCloud tagCloud,
     IWordsReader reader) : IApiAction
 {
     private readonly JsonSerializerOptions _jsonSerializerOptions =
@@ -21,7 +21,7 @@ public class GetWordsAction(
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
         var words = reader.ReadFromString(wordContainer!.Words);
-        var tagsInCloud = tagCloudPainter.GetTagsToPrintImage(words.GetValueOrThrow());
+        var tagsInCloud = tagCloud.GetTags(words.GetValueOrThrow());
 
         JsonSerializer.Serialize(outputStream, tagsInCloud, options: _jsonSerializerOptions);
         return (int)HttpStatusCode.OK;

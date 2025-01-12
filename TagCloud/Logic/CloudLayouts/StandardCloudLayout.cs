@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using ResultTools;
 using TagCloud.Extensions;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloud.Logic.PointGenerators;
@@ -7,9 +8,9 @@ namespace TagCloud.Logic.CloudLayouts;
 
 public class StandardCloudLayout : ICloudLayout
 {
-    private readonly IEnumerator<Point> _pointGeneratorIterator;
+    private readonly IEnumerator<Point> pointGeneratorIterator;
 
-    private readonly List<Rectangle> _rectangles = [];
+    private readonly List<Rectangle> rectangles = [];
 
     public StandardCloudLayout(ILogicSettingsProvider logicSettingsProvider, IPointGenerator[] pointGenerators)
     {
@@ -17,44 +18,48 @@ public class StandardCloudLayout : ICloudLayout
         var pointGeneratorType = logicSettings.PointGeneratorType;
         var pointGenerator = GetPointGenerator(pointGeneratorType, pointGenerators);
 
-        _pointGeneratorIterator = pointGenerator
+        pointGeneratorIterator = pointGenerator
+            .GetValueOrThrow()
             .GeneratePoint()
             .GetEnumerator();
     }
 
-    private static IPointGenerator GetPointGenerator(PointGeneratorType pointGeneratorType, IPointGenerator[] pointGenerators)
-    {
-        var pointGenerator = pointGenerators.FirstOrDefault(pg => pg.PointGeneratorType == pointGeneratorType);
+    private static Result<IPointGenerator> GetPointGenerator(PointGeneratorType pointGeneratorType,
+        Result<IPointGenerator[]> pointGenerators) =>
+        pointGenerators
+            .Then(x => x.FirstOrDefault(pg => pg.PointGeneratorType == pointGeneratorType))
+            .Then(CheckTypeForNull);
 
-        if (pointGenerator == null)
-            throw new ArgumentOutOfRangeException(nameof(pointGeneratorType),
-                pointGeneratorType,
-                "No such pointGenerator type.");
-        return pointGenerator;
-    }
+    private static Result<IPointGenerator> CheckTypeForNull(IPointGenerator? pointGenerator) =>
+        pointGenerator == null
+            ? Result.Fail<IPointGenerator>("No such pointGenerator type")
+            : Result.Ok(pointGenerator);
 
-    public Rectangle PutNextRectangle(Size size)
+    public Rectangle PutNextRectangle(Result<Size> size)
     {
-        if (size.Width < 1 || size.Height < 1)
-            throw new ArgumentOutOfRangeException(
-                $"{nameof(size.Width)} and {nameof(size.Height)} should be greater than zero");
+        var newSize = size.Then(IsValidSize).GetValueOrThrow();
 
         Rectangle newRectangle;
-        do newRectangle = GetNextRectangle(size);
-        while (_rectangles.Any(rec => rec.IntersectsWith(newRectangle)));
+        do newRectangle = GetNextRectangle(newSize);
+        while (rectangles.Any(rec => rec.IntersectsWith(newRectangle)));
 
-        _rectangles.Add(newRectangle);
+        rectangles.Add(newRectangle);
         return newRectangle;
     }
+
+    private static Result<Size> IsValidSize(Size size) =>
+        size.Width < 1 || size.Height < 1
+            ? Result.Fail<Size>($"{nameof(size.Width)} and {nameof(size.Height)} should be greater than zero")
+            : Result.Ok(size);
 
     private Rectangle GetNextRectangle(Size rectangleSize) =>
         new(GetNextRectangleCenter(rectangleSize), rectangleSize);
 
     private Point GetNextRectangleCenter(Size rectangleSize)
     {
-        _pointGeneratorIterator.MoveNext();
+        pointGeneratorIterator.MoveNext();
         var rectangleCenter = ShiftRectangleLocationBy(rectangleSize);
-        return _pointGeneratorIterator
+        return pointGeneratorIterator
             .Current
             .MoveTo(rectangleCenter);
     }

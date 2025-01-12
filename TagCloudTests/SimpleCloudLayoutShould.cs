@@ -63,7 +63,7 @@ public class SimpleCloudLayoutShould
 
         executePutNewRectangle
             .Should()
-            .Throw<ArgumentOutOfRangeException>();
+            .Throw<InvalidOperationException>();
     }
 
     [Test]

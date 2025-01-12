@@ -10,10 +10,10 @@ namespace TagCloudTests;
 public class WordSizeCalculatorShould
 {
     private readonly IImageSettingsProvider _imageSettingsProvider = new ImageSettingsProvider();
-    
+
     [Test]
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    public void Calculate_ShouldReturnTagsWithSize_AfterExecutionWithOneWordCollection()
+    public void Calculate_ShouldReturnStringsWithSize_AfterExecutionWithOneWordCollection()
     {
         var imageSettings = _imageSettingsProvider.GetImageSettings();
         var wordSizeCalculator = new WordSizeCalculator(_imageSettingsProvider);
@@ -24,8 +24,8 @@ public class WordSizeCalculatorShould
 
         using var _ = new AssertionScope();
         wordFrequencyDictionary.Count.Should().Be(expectedNumberOfWords);
-        wordFrequencyDictionary.First().Value.Should().Be(oneWordCollection.FirstOrDefault());
-        wordFrequencyDictionary.First().Font.Size.Should()
+        wordFrequencyDictionary.First().Key.Should().Be(oneWordCollection.FirstOrDefault());
+        wordFrequencyDictionary.First().Value.Should()
             .BeInRange(imageSettings.MinFontSize, imageSettings.MaxFontSize);
     }
 }

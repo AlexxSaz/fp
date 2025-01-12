@@ -7,18 +7,21 @@ namespace TagCloud.Calculators;
 
 public class WordSizeCalculator(IImageSettingsProvider imageSettingsProvider) : ISizeCalculator
 {
-    public IReadOnlyCollection<IWordTag> Calculate(IEnumerable<string> words)
+    public IReadOnlyDictionary<string, int> Calculate(IEnumerable<string> words)
     {
         var dictionaryWithWordFrequency = GetDictionaryWithWordFrequency(words);
         var imageSettings = imageSettingsProvider.GetImageSettings();
         var maxFrequency = dictionaryWithWordFrequency.Values.Max();
 
-        return (from wordCountPair in dictionaryWithWordFrequency
-                let normalizedFrequency = GetNormalizedFrequency(wordCountPair.Value, maxFrequency)
-                let size = GetSize(normalizedFrequency, imageSettings.MaxFontSize, imageSettings.MinFontSize)
-                select new StandardWordTag(wordCountPair.Key, new Font(imageSettings.FontFamily, size),
-                    new Point(0, 0)))
-            .Cast<IWordTag>().ToList();
+        var result = new Dictionary<string, int>();
+        foreach (var wordCountPair in dictionaryWithWordFrequency)
+        {
+            var normFreq = GetNormalizedFrequency(wordCountPair.Value, maxFrequency);
+            var size = GetSize(normFreq, imageSettings.MaxFontSize, imageSettings.MinFontSize);
+            result.Add(wordCountPair.Key, size);
+        }
+
+        return result;
     }
 
     private static Dictionary<string, int> GetDictionaryWithWordFrequency(IEnumerable<string> words)
