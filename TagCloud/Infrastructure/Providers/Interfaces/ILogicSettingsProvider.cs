@@ -1,7 +1,9 @@
-﻿namespace TagCloud.Infrastructure.Providers.Interfaces;
+﻿using ResultTools;
+
+namespace TagCloud.Infrastructure.Providers.Interfaces;
 
 public interface ILogicSettingsProvider
 {
     LogicSettings GetLogicSettings();
-    void SetLogicSettings(LogicSettings logicSettings);
+    void SetLogicSettings(Result<LogicSettings> currentLogicSettings);
 }
