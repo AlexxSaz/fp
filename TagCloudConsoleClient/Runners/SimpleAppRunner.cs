@@ -13,7 +13,7 @@ public class SimpleAppRunner : IAppRunner
         var actionsArray = actions.ToArray();
         routeActions = actionsArray.ToDictionary(action => action.OptionType, action => action);
     }
-    
+
     private readonly Type[] optionsTypes =
     [
         typeof(ImageSettingsOption),
@@ -27,14 +27,21 @@ public class SimpleAppRunner : IAppRunner
     {
         while (true)
         {
-            var input = Console.ReadLine();
-            var args = input?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
-            Parser.Default.ParseArguments(args, optionsTypes)
-                .WithParsed<IOption>(Perform);
+            try
+            {
+                var input = Console.ReadLine();
+                var args = input?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
+                Parser.Default.ParseArguments(args, optionsTypes)
+                    .WithParsed<IOption>(Perform);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
         // ReSharper disable once FunctionNeverReturns
     }
-    
+
     private void Perform(IOption option)
     {
         var action = routeActions[option.OptionType];
