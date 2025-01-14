@@ -20,7 +20,7 @@ public class GetWordsAction(
     public int Perform(Stream inputStream, Stream outputStream)
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
-        var words = reader.ReadFromString(wordContainer!.Words).GetValueOrThrow();
+        var words = reader.ReadFromString(wordContainer!.Words);
         var tagCloud = tagCloudCreator.Create(words);
         var tagsInCloud = tagCloud.Tags;
 

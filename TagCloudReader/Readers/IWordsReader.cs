@@ -4,6 +4,6 @@ namespace TagCloudReader.Readers;
 
 public interface IWordsReader
 {
-    Result<IEnumerable<string>> ReadFromTxt(Result<string> path);
-    Result<IEnumerable<string>> ReadFromString(Result<string> words);
+    IEnumerable<string> ReadFromTxt(Result<string> path);
+    IEnumerable<string> ReadFromString(Result<string> words);
 }

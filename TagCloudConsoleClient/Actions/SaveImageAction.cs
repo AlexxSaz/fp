@@ -22,7 +22,7 @@ public class SaveImageAction(
         var imageSettings = imageSettingsProvider.GetImageSettings();
         var palette = paletteProvider.GetPalette();
 
-        var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile).GetValueOrThrow();
+        var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
         var tagCloud = tagCloudCreator.Create(words);
         var tagsInCloud = tagCloud.Tags;
 
@@ -44,6 +44,6 @@ public class SaveImageAction(
 
         var path = optionSettings.OutputPngFile;
         bitmap.Save(path, ImageFormat.Png);
-        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}.";
+        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
     }
 }
