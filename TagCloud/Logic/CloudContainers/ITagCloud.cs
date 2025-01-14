@@ -1,9 +1,13 @@
-﻿using TagCloud.Infrastructure.Tags;
-using TagCloud.Logic.CloudLayouts;
+﻿using System.Drawing;
+using TagCloud.Infrastructure;
+using TagCloud.Infrastructure.Tags;
 
 namespace TagCloud.Logic.CloudContainers;
 
 public interface ITagCloud
 {
-    IReadOnlyCollection<StandardWordTag> GetTags(IEnumerable<string> words);
+    int Width { get; }
+    int Height { get; }
+    List<StandardWordTag> Tags { get; }
+    void AddTag(string word, int wordSize, ImageSettings imageSettings, Graphics graphics);
 }

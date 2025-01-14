@@ -12,19 +12,19 @@ namespace TagCloudTests;
 
 public class SimpleCloudLayoutShould
 {
-    private readonly Point _defaultCenter = new();
-    private readonly Random _random = new();
-    private readonly LogicSettingsProvider _logicSettingsProvider = new();
+    private readonly Point defaultCenter = new();
+    private readonly Random random = new();
+    private readonly LogicSettingsProvider logicSettingsProvider = new();
 
     [Test]
     [Repeat(5)]
     public void PutNextRectangle_ReturnRectangleWithExpectedLocation_AfterFirstExecution()
     {
-        var expectedCenter = new Point(_random.Next(-10, 10), _random.Next(-10, 10));
+        var expectedCenter = new Point(random.Next(-10, 10), random.Next(-10, 10));
         var logicSettingsToSet = new LogicSettings();
         logicSettingsToSet = logicSettingsToSet with { Center = new Size(expectedCenter) };
-        _logicSettingsProvider.SetLogicSettings(logicSettingsToSet);
-        var logicSettings = _logicSettingsProvider.GetLogicSettings();
+        logicSettingsProvider.SetLogicSettings(logicSettingsToSet);
+        var logicSettings = logicSettingsProvider.GetLogicSettings();
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
@@ -33,7 +33,7 @@ public class SimpleCloudLayoutShould
         var rectangleSize = GenerateSize()
             .Take(1)
             .First();
-        var cloudLayout = new StandardCloudLayout(_logicSettingsProvider, pointGenerators);
+        var cloudLayout = new StandardCloudLayout(logicSettingsProvider, pointGenerators);
 
         var actualRectangle = cloudLayout.PutNextRectangle(rectangleSize);
 
@@ -49,13 +49,13 @@ public class SimpleCloudLayoutShould
     public void PutNextRectangle_ThrowArgumentOutOfRangeException_AfterExecutionWith(int width, int height)
     {
         var rectangleSize = new Size(width, height);
-        var logicSettings = _logicSettingsProvider.GetLogicSettings();
+        var logicSettings = logicSettingsProvider.GetLogicSettings();
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
             new AstroidPointGenerator(logicSettings)
         ];
-        var circularCloudLayout = new StandardCloudLayout(_logicSettingsProvider, pointGenerators);
+        var circularCloudLayout = new StandardCloudLayout(logicSettingsProvider, pointGenerators);
 
         var executePutNewRectangle = () =>
             circularCloudLayout
@@ -71,14 +71,14 @@ public class SimpleCloudLayoutShould
     public void PutNextRectangle_ReturnRectangleThatNotIntersectsWithOther_AfterManyExecution()
     {
         var rectangleSizes = GenerateSize()
-            .Take(_random.Next(10, 200));
-        var logicSettings = _logicSettingsProvider.GetLogicSettings();
+            .Take(random.Next(10, 200));
+        var logicSettings = logicSettingsProvider.GetLogicSettings();
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
             new AstroidPointGenerator(logicSettings)
         ];
-        var cloudLayout = new StandardCloudLayout(_logicSettingsProvider, pointGenerators);
+        var cloudLayout = new StandardCloudLayout(logicSettingsProvider, pointGenerators);
 
         var rectangles = rectangleSizes
             .Select(size => cloudLayout.PutNextRectangle(size))
@@ -97,14 +97,14 @@ public class SimpleCloudLayoutShould
     public void PutNextRectangle_ReturnRectanglesInCircle_AfterManyExecution()
     {
         var rectangleSizes = GenerateSize()
-            .Take(_random.Next(100, 200));
-        var logicSettings = _logicSettingsProvider.GetLogicSettings();
+            .Take(random.Next(100, 200));
+        var logicSettings = logicSettingsProvider.GetLogicSettings();
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
             new AstroidPointGenerator(logicSettings)
         ];
-        var circularCloudLayout = new StandardCloudLayout(_logicSettingsProvider, pointGenerators);
+        var circularCloudLayout = new StandardCloudLayout(logicSettingsProvider, pointGenerators);
 
         var rectanglesList = rectangleSizes
             .Select(rectangleSize => circularCloudLayout
@@ -113,7 +113,7 @@ public class SimpleCloudLayoutShould
 
         var circleRadius = rectanglesList
             .Select(rectangle => rectangle.GetCentralPoint())
-            .Max(pointOnCircle => pointOnCircle.GetDistanceTo(_defaultCenter));
+            .Max(pointOnCircle => pointOnCircle.GetDistanceTo(defaultCenter));
 
         var sumRectanglesSquare = rectanglesList.Sum(rectangle => rectangle.Width * rectangle.Height);
         var circleSquare = circleRadius * circleRadius * Math.PI;

@@ -4,9 +4,9 @@ namespace TagCloud.Infrastructure.Providers;
 
 public class ImageSettingsProvider : IImageSettingsProvider
 {
-    private ImageSettings _imageSettings = new();
+    private ImageSettings imageSettings = new();
 
-    public ImageSettings GetImageSettings() => _imageSettings;
+    public ImageSettings GetImageSettings() => imageSettings;
 
-    public void SetImageSettings(ImageSettings imageSettings) => _imageSettings = imageSettings;
+    public void SetImageSettings(ImageSettings imageSettings) => this.imageSettings = imageSettings;
 }

@@ -1,7 +1,4 @@
 ﻿using TagCloud.Infrastructure.Providers.Interfaces;
-using TagCloud.Infrastructure.Tags;
-using Font = TagCloud.Model.Font;
-using Point = TagCloud.Model.Point;
 
 namespace TagCloud.Calculators;
 

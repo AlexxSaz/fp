@@ -4,9 +4,9 @@ namespace TagCloud.Infrastructure.Providers;
 
 public class PaletteProvider : IPaletteProvider
 {
-    private Palette _palette = new();
+    private Palette palette = new();
 
-    public Palette GetPalette() => _palette;
+    public Palette GetPalette() => palette;
 
-    public void SetPalette(Palette palette) => _palette = palette;
+    public void SetPalette(Palette currentPalette) => palette = currentPalette;
 }

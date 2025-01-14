@@ -1,16 +1,16 @@
 ﻿using System.Net;
 using System.Text.Json;
-using TagCloud.Logic.CloudContainers;
+using TagCloud.Logic.CloudCreators;
 using TagCloudReader.Readers;
 using TagCloudWebClient.JsonConverters;
 
 namespace TagCloudWebClient.UiActions;
 
 public class GetWordsAction(
-    ITagCloud tagCloud,
+    ITagCloudCreator tagCloudCreator,
     IWordsReader reader) : IApiAction
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions =
+    private readonly JsonSerializerOptions jsonSerializerOptions =
         new() { Converters = { new WordTagJsonConverter() } };
 
     public string Endpoint => "/getWords";
@@ -20,10 +20,11 @@ public class GetWordsAction(
     public int Perform(Stream inputStream, Stream outputStream)
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
-        var words = reader.ReadFromString(wordContainer!.Words);
-        var tagsInCloud = tagCloud.GetTags(words.GetValueOrThrow());
+        var words = reader.ReadFromString(wordContainer!.Words).GetValueOrThrow();
+        var tagCloud = tagCloudCreator.Create(words);
+        var tagsInCloud = tagCloud.Tags;
 
-        JsonSerializer.Serialize(outputStream, tagsInCloud, options: _jsonSerializerOptions);
+        JsonSerializer.Serialize(outputStream, tagsInCloud, options: jsonSerializerOptions);
         return (int)HttpStatusCode.OK;
     }
 }

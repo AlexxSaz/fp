@@ -8,7 +8,7 @@ public struct Result<T>(string error, T value = default(T))
     }
 
     public string Error { get; } = error;
-    public T Value { get; } = value;
+    internal T Value { get; } = value;
 
     public T GetValueOrThrow()
     {

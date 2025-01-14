@@ -6,15 +6,15 @@ namespace TagCloudConsoleClient.Runners;
 
 public class SimpleAppRunner : IAppRunner
 {
-    private readonly IReadOnlyDictionary<OptionType, IConsoleAction> _routeActions;
+    private readonly IReadOnlyDictionary<OptionType, IConsoleAction> routeActions;
 
     public SimpleAppRunner(IEnumerable<IConsoleAction> actions)
     {
         var actionsArray = actions.ToArray();
-        _routeActions = actionsArray.ToDictionary(action => action.OptionType, action => action);
+        routeActions = actionsArray.ToDictionary(action => action.OptionType, action => action);
     }
     
-    private readonly Type[] _optionsTypes =
+    private readonly Type[] optionsTypes =
     [
         typeof(ImageSettingsOption),
         typeof(LogicSettingsOption),
@@ -29,7 +29,7 @@ public class SimpleAppRunner : IAppRunner
         {
             var input = Console.ReadLine();
             var args = input?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
-            Parser.Default.ParseArguments(args, _optionsTypes)
+            Parser.Default.ParseArguments(args, optionsTypes)
                 .WithParsed<IOption>(Perform);
         }
         // ReSharper disable once FunctionNeverReturns
@@ -37,7 +37,7 @@ public class SimpleAppRunner : IAppRunner
     
     private void Perform(IOption option)
     {
-        var action = _routeActions[option.OptionType];
+        var action = routeActions[option.OptionType];
         Console.WriteLine(action.Perform(option));
     }
 }

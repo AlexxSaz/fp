@@ -9,14 +9,14 @@ namespace TagCloudTests;
 
 public class WordSizeCalculatorShould
 {
-    private readonly IImageSettingsProvider _imageSettingsProvider = new ImageSettingsProvider();
+    private readonly IImageSettingsProvider imageSettingsProvider = new ImageSettingsProvider();
 
     [Test]
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public void Calculate_ShouldReturnStringsWithSize_AfterExecutionWithOneWordCollection()
     {
-        var imageSettings = _imageSettingsProvider.GetImageSettings();
-        var wordSizeCalculator = new WordSizeCalculator(_imageSettingsProvider);
+        var imageSettings = imageSettingsProvider.GetImageSettings();
+        var wordSizeCalculator = new WordSizeCalculator(imageSettingsProvider);
         var oneWordCollection = Enumerable.Repeat("ясно", 6);
         var expectedNumberOfWords = oneWordCollection.GroupBy(x => x).Count();
 

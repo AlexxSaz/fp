@@ -11,8 +11,8 @@ namespace TagCloudTests;
 public class PointGeneratorShould
 {
     private static readonly LogicSettingsProvider LogicSettingsProvider = new();
-    private readonly Point _defaultCenter = new();
-    private readonly Random _random = new();
+    private readonly Point defaultCenter = new();
+    private readonly Random random = new();
 
     [TestCase(PointGeneratorType.Spiral)]
     [TestCase(PointGeneratorType.Astroid)]
@@ -31,7 +31,7 @@ public class PointGeneratorShould
 
         point
             .Should()
-            .BeEquivalentTo(_defaultCenter);
+            .BeEquivalentTo(defaultCenter);
     }
 
     [TestCase(PointGeneratorType.Spiral)]
@@ -40,17 +40,17 @@ public class PointGeneratorShould
     public void GetNewPoint_ReturnPointWithGreaterRadius_WithPointGenerator(PointGeneratorType pointGeneratorType)
     {
         var newPointGenerator = GetPointGenerator(pointGeneratorType);
-        var countOfPoints = _random.Next(10, 200);
+        var countOfPoints = random.Next(10, 200);
         var points = newPointGenerator
             .GeneratePoint()
             .Take(countOfPoints)
             .ToArray();
 
         var distances = points
-            .Select(p => p.GetDistanceTo(_defaultCenter))
+            .Select(p => p.GetDistanceTo(defaultCenter))
             .ToArray();
         var angles = points
-            .Select(p => Math.Atan2(p.Y - _defaultCenter.Y, p.X - _defaultCenter.X))
+            .Select(p => Math.Atan2(p.Y - defaultCenter.Y, p.X - defaultCenter.X))
             .ToArray();
 
         using var _ = new AssertionScope();

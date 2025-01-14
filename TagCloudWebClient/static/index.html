@@ -270,7 +270,7 @@
 
             showErrorModal(await response.text());
         } catch (error) {
-            showErrorModal(await error.text());
+            showErrorModal(await error.message);
         }
     }
 
@@ -287,7 +287,7 @@
 
             showErrorModal(await response.text());
         } catch (error) {
-            showErrorModal(await error.text());
+            showErrorModal(await error.message);
         }
     }
 
@@ -303,7 +303,7 @@
 
             showErrorModal(await response.text());
         } catch (error) {
-            showErrorModal(await error.text());
+            showErrorModal(await error.message);
         }
     }
 
@@ -350,13 +350,13 @@
             const fileContent = {
                 Words: e.target.result
             }            
-            post("/getWords", fileContent) // Отправляем текст, а не inputFile
-                .then(words1 => draw(words1))
+            post("/getWords", fileContent) 
+                .then(words => draw(words))
                 .catch(error => {
-                    if (error.message) { // message, а не Message
+                    if (error.message) {
                         showErrorModal(error.message);
                     } else {
-                        showErrorModal("Произошла неизвестная ошибка."); // Обработка других ошибок
+                        showErrorModal("Произошла неизвестная ошибка.");
                     }
                 });
         };
@@ -369,9 +369,13 @@
     }
 
     const draw = (words) => {
+        if (words === undefined) {
+            return;
+        }
         clearCanvas();
         fillBackgroundColor();
         let fontColor = hexToRgb(fontColorInput.value);
+        console.log(words);        
         words.forEach(word => {
             ctx.font = `${word.Font.Size}px ${word.Font.Family.Name}`;
             ctx.fillStyle = `rgb(${fontColor.R},${fontColor.G},${fontColor.B})`;

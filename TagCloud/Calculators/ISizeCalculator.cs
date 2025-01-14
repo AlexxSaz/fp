@@ -1,6 +1,4 @@
-﻿using TagCloud.Infrastructure.Tags;
-
-namespace TagCloud.Calculators;
+﻿namespace TagCloud.Calculators;
 
 public interface ISizeCalculator
 {

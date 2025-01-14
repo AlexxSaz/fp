@@ -9,31 +9,23 @@ namespace TagCloud.Logic.CloudLayouts;
 public class StandardCloudLayout : ICloudLayout
 {
     private readonly IEnumerator<Point> pointGeneratorIterator;
-
+    private readonly IPointGenerator[] pointGenerators;
     private readonly List<Rectangle> rectangles = [];
 
-    public StandardCloudLayout(ILogicSettingsProvider logicSettingsProvider, IPointGenerator[] pointGenerators)
+    public StandardCloudLayout(ILogicSettingsProvider logicSettingsProvider, IPointGenerator[] currentPointGenerators)
     {
+        pointGenerators = currentPointGenerators;
         var logicSettings = logicSettingsProvider.GetLogicSettings();
         var pointGeneratorType = logicSettings.PointGeneratorType;
-        var pointGenerator = GetPointGenerator(pointGeneratorType, pointGenerators);
+        var pointGenerator = GetPointGenerator(pointGeneratorType);
 
         pointGeneratorIterator = pointGenerator
-            .GetValueOrThrow()
             .GeneratePoint()
             .GetEnumerator();
     }
 
-    private static Result<IPointGenerator> GetPointGenerator(PointGeneratorType pointGeneratorType,
-        Result<IPointGenerator[]> pointGenerators) =>
-        pointGenerators
-            .Then(x => x.FirstOrDefault(pg => pg.PointGeneratorType == pointGeneratorType))
-            .Then(CheckTypeForNull);
-
-    private static Result<IPointGenerator> CheckTypeForNull(IPointGenerator? pointGenerator) =>
-        pointGenerator == null
-            ? Result.Fail<IPointGenerator>("No such pointGenerator type")
-            : Result.Ok(pointGenerator);
+    private IPointGenerator GetPointGenerator(PointGeneratorType pointGeneratorType) =>
+        pointGenerators.First(pointGenerator => pointGenerator.PointGeneratorType == pointGeneratorType);
 
     public Rectangle PutNextRectangle(Result<Size> size)
     {

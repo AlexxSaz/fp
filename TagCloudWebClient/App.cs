@@ -7,25 +7,25 @@ namespace TagCloudWebClient;
 internal sealed class App
 {
     private const string Endpoint = "http://localhost:8081/";
-    private readonly HttpListener _httpListener;
-    private readonly IReadOnlyDictionary<string, IApiAction> _routeActions;
+    private readonly HttpListener httpListener;
+    private readonly IReadOnlyDictionary<string, IApiAction> routeActions;
 
     public App(IEnumerable<IApiAction> actions)
     {
         var actionsArray = actions.ToArray();
-        _httpListener = new HttpListener();
-        _httpListener.Prefixes.Add(Endpoint);
-        _routeActions = actionsArray.ToDictionary(action => $"{action.HttpMethod} {action.Endpoint}", action => action);
+        httpListener = new HttpListener();
+        httpListener.Prefixes.Add(Endpoint);
+        routeActions = actionsArray.ToDictionary(action => $"{action.HttpMethod} {action.Endpoint}", action => action);
     }
 
     public async Task Run()
     {
-        _httpListener.Start();
+        httpListener.Start();
         Console.WriteLine($"Listening at {Endpoint}");
 
         while (true)
         {
-            var context = await _httpListener.GetContextAsync();
+            var context = await httpListener.GetContextAsync();
             
             try
             {
@@ -39,7 +39,7 @@ internal sealed class App
                     continue;
                 }
 
-                if (!_routeActions.TryGetValue(actionKey, out var action))
+                if (!routeActions.TryGetValue(actionKey, out var action))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     context.Response.Close();

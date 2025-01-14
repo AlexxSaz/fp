@@ -8,7 +8,7 @@ namespace TagCloudWebClient.UiActions;
 
 public class UpdateImageSettingsAction(IImageSettingsProvider imageSettingsProvider) : IApiAction
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions =
+    private readonly JsonSerializerOptions jsonSerializerOptions =
         new() { Converters = { new FontFamilyJsonConverter() } };
 
     public string Endpoint => "/settings";
@@ -16,7 +16,7 @@ public class UpdateImageSettingsAction(IImageSettingsProvider imageSettingsProvi
 
     public int Perform(Stream inputStream, Stream outputStream)
     {
-        var updatedSettings = JsonSerializer.Deserialize<ImageSettings>(inputStream, _jsonSerializerOptions);
+        var updatedSettings = JsonSerializer.Deserialize<ImageSettings>(inputStream, jsonSerializerOptions);
         if (updatedSettings != null) imageSettingsProvider.SetImageSettings(updatedSettings);
         var settings = imageSettingsProvider.GetImageSettings();
         JsonSerializer.Serialize(outputStream, settings);

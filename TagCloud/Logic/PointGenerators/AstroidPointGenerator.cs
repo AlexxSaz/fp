@@ -6,9 +6,9 @@ namespace TagCloud.Logic.PointGenerators;
 
 public class AstroidPointGenerator(LogicSettings logicSettings) : IPointGenerator
 {
-    private readonly Size _centerPointSize = logicSettings.Center;
-    private readonly double _angleStep = logicSettings.AngleStep;
-    private readonly double _radiusStep = logicSettings.RadiusStep;
+    private readonly Size centerPointSize = logicSettings.Center;
+    private readonly double angleStep = logicSettings.AngleStep;
+    private readonly double radiusStep = logicSettings.RadiusStep;
     public PointGeneratorType PointGeneratorType => PointGeneratorType.Astroid;
 
     public IEnumerable<Point> GeneratePoint()
@@ -20,10 +20,10 @@ public class AstroidPointGenerator(LogicSettings logicSettings) : IPointGenerato
         {
             var newX = (int)(radius * Math.Pow(Math.Cos(angle), 3));
             var newY = (int)(radius * Math.Pow(Math.Sin(angle), 3));
-            var newPoint = new Point(newX, newY).MoveTo(_centerPointSize);
+            var newPoint = new Point(newX, newY).MoveTo(centerPointSize);
 
-            radius += _radiusStep;
-            angle += _angleStep;
+            radius += radiusStep;
+            angle += angleStep;
 
             yield return newPoint;
         }
