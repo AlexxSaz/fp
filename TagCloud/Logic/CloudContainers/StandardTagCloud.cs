@@ -12,7 +12,9 @@ public class StandardTagCloud(ICloudLayout cloudLayout) : ITagCloud
     private int maxBottom;
     private int minLeft = int.MaxValue;
     private int minTop = int.MaxValue;
-    public List<StandardWordTag> Tags { get; } = new();
+    private readonly List<StandardWordTag> tags = [];
+
+    public IReadOnlyCollection<StandardWordTag> Tags => tags;
 
     public int Width => Tags.Count == 0 ? 0 : maxRight - minLeft;
 
@@ -33,7 +35,7 @@ public class StandardTagCloud(ICloudLayout cloudLayout) : ITagCloud
                 return new Model.Point(frame.X + imageSettings.Width / 2,
                     frame.Y + imageSettings.Height / 2);
             })
-            .Then(location => Tags.Add(new StandardWordTag(word, font, location)));
+            .Then(location => tags.Add(new StandardWordTag(word, font, location)));
     }
 
     private static Size CalculateWordSize(Graphics graphics, string word, Model.Font font)

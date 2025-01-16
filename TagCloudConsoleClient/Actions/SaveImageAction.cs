@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
+using ResultTools;
 using TagCloud.Infrastructure.Providers.Interfaces;
+using TagCloud.Infrastructure.Tags;
 using TagCloud.Logic.CloudCreators;
 using TagCloudConsoleClient.Options;
 using TagCloudReader.Readers;
@@ -19,15 +21,26 @@ public class SaveImageAction(
     public string Perform(IOption option)
     {
         var optionSettings = (SaveImageOption)option;
+        var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
+        var tagCloudResult = tagCloudCreator.Create(words);
+        if (!tagCloudResult.IsSuccess) return $"Ошибка! {tagCloudResult.Error}\nКартинка не сохранена.";
+        tagCloudResult.Then(tagCloud =>
+        {
+            var tagsInCloud = tagCloud.Tags;
+            using var bitmap = GetBitmap(tagsInCloud);
+
+            var path = optionSettings.OutputPngFile;
+            bitmap.Save(path, ImageFormat.Png);
+        });
+        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
+    }
+
+    private Bitmap GetBitmap(IReadOnlyCollection<StandardWordTag> tagsInCloud)
+    {
         var imageSettings = imageSettingsProvider.GetImageSettings();
         var palette = paletteProvider.GetPalette();
-
-        var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
-        var tagCloud = tagCloudCreator.Create(words);
-        var tagsInCloud = tagCloud.Tags;
-
         const int rectangleOutline = 1;
-        using var bitmap = new Bitmap(
+        var bitmap = new Bitmap(
             imageSettings.Width + rectangleOutline,
             imageSettings.Height + rectangleOutline);
         using var graphics = Graphics.FromImage(bitmap);
@@ -42,8 +55,6 @@ public class SaveImageAction(
             graphics.DrawString(tag.Value, font, brush, tag.Location.X, tag.Location.Y);
         }
 
-        var path = optionSettings.OutputPngFile;
-        bitmap.Save(path, ImageFormat.Png);
-        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
+        return bitmap;
     }
 }

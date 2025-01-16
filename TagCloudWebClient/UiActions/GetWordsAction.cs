@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using ResultTools;
 using TagCloud.Logic.CloudCreators;
 using TagCloudReader.Readers;
 using TagCloudWebClient.JsonConverters;
@@ -21,10 +22,13 @@ public class GetWordsAction(
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
         var words = reader.ReadFromString(wordContainer!.Words);
-        var tagCloud = tagCloudCreator.Create(words);
-        var tagsInCloud = tagCloud.Tags;
-
-        JsonSerializer.Serialize(outputStream, tagsInCloud, options: jsonSerializerOptions);
-        return (int)HttpStatusCode.OK;
+        var tagCloudResult = tagCloudCreator.Create(words);
+        if (tagCloudResult.IsSuccess)
+        {
+            tagCloudResult.Then(tagCloud => JsonSerializer.Serialize(outputStream, tagCloud.Tags, options: jsonSerializerOptions));
+            return (int)HttpStatusCode.OK;
+        }
+        JsonSerializer.SerializeAsync(outputStream, new ResultError(tagCloudResult.Error));
+        return (int)HttpStatusCode.InternalServerError;
     }
 }

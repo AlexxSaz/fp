@@ -46,7 +46,7 @@ internal sealed class App
                     continue;
                 }
 
-                action.Perform(context.Request.InputStream, context.Response.OutputStream);
+                context.Response.StatusCode = action.Perform(context.Request.InputStream, context.Response.OutputStream);
             }
             catch (Exception e)
             {

@@ -15,17 +15,17 @@ public class WordTagCloudCreator(
     ISizeCalculator sizeCalculator,
     Func<ITagCloud> tagCloudFactory) : ITagCloudCreator
 {
-    public ITagCloud Create(IEnumerable<string> words)
+    public Result<ITagCloud> Create(IEnumerable<string> words)
     {
-        var tagCloud = Result.Ok(tagCloudFactory());
+        var tagCloud = tagCloudFactory();
         var imageSettings = imageSettingsProvider.GetImageSettings();
-        var preparedTagCloud = PrepareTagCloud(tagCloud, words, imageSettings).GetValueOrThrow();
-        return preparedTagCloud;
+        return PrepareTagCloud(tagCloud, words, imageSettings).Then(cloud => cloud);
     }
 
-    private Result<ITagCloud> PrepareTagCloud(Result<ITagCloud> tagCloud, IEnumerable<string> words,
+    private Result<ITagCloud> PrepareTagCloud(ITagCloud tagCloud, IEnumerable<string> words,
         ImageSettings imageSettings) =>
         tagCloud
+            .AsResult()
             .Then(cloud => FillCloud(cloud, words, imageSettings))
             .Then(cloud => CheckCloudSize(cloud, imageSettings));
 

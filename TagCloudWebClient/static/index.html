@@ -351,7 +351,14 @@
                 Words: e.target.result
             }            
             post("/getWords", fileContent) 
-                .then(words => draw(words))
+                .then(words => {
+                    if (words.Message === undefined) {
+                        draw(words);
+                    }
+                    else {
+                        showErrorModal(words.Message);
+                    }
+                })
                 .catch(error => {
                     if (error.message) {
                         showErrorModal(error.message);
@@ -369,7 +376,7 @@
     }
 
     const draw = (words) => {
-        if (words === undefined) {
+        if (words === undefined || !isIterable(words)) {
             return;
         }
         clearCanvas();
@@ -381,6 +388,13 @@
             ctx.fillStyle = `rgb(${fontColor.R},${fontColor.G},${fontColor.B})`;
             ctx.fillText(word.Value, word.Location.X, word.Location.Y);
         });
+    }
+
+    const isIterable = (obj) => {
+        if (obj == null) {
+            return false;
+        }
+        return typeof obj[Symbol.iterator] === 'function';
     }
 
     const clearCanvas = () => {

@@ -8,6 +8,6 @@ public interface ITagCloud
 {
     int Width { get; }
     int Height { get; }
-    List<StandardWordTag> Tags { get; }
+    IReadOnlyCollection<StandardWordTag> Tags { get; }
     void AddTag(string word, int wordSize, ImageSettings imageSettings, Graphics graphics);
 }
