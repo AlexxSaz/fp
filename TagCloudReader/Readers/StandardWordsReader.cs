@@ -4,20 +4,21 @@ namespace TagCloudReader.Readers;
 
 public class StandardWordsReader : IWordsReader
 {
-    private readonly IEnumerable<string> defaultWords = "Несколько дефолтных слов".Split();
+    private readonly string[] defaultWords = "Несколько дефолтных слов".Split();
 
-    public IEnumerable<string> ReadFromTxt(Result<string> path) =>
+    public Result<IEnumerable<string>> ReadFromTxt(string path) =>
         path
+            .AsResult()
             .Then(IsStringValid)
             .Then(IsFileExists)
-            .Then(x => GetResult(x, File.ReadAllLines))
-            .GetValueOrThrow();
+            .Then(x => GetResult(x, File.ReadAllLines));
 
-    public IEnumerable<string> ReadFromString(Result<string> words) =>
+    public Result<IEnumerable<string>> ReadFromString(string words) =>
         words
+            .AsResult()
             .Then(IsStringValid)
-            .Then(x => GetResult(x, s => s.Split(["\n", "\r", "\r\n"], StringSplitOptions.RemoveEmptyEntries)))
-            .GetValueOrThrow();
+            .Then(x => GetResult(x, s =>
+                s.Split(["\n", "\r", "\r\n"], StringSplitOptions.RemoveEmptyEntries)));
 
     private static Result<string> IsFileExists(string path) =>
         File.Exists(path) ? path : Result.Fail<string>("File does not exist");

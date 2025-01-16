@@ -7,7 +7,7 @@ public class StandardWordHandler(IWordsReader reader) : IWordHandler
     private const string BoringWordsFilePath = "BoringWordsDictionary.txt";
 
     private HashSet<string> BoringWords =>
-        reader.ReadFromTxt(BoringWordsFilePath).ToHashSet();
+        reader.ReadFromTxt(BoringWordsFilePath).Value.ToHashSet();
 
     public IEnumerable<string> Handle(IEnumerable<string> words) =>
         words

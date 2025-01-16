@@ -21,18 +21,22 @@ public class SaveImageAction(
     public string Perform(IOption option)
     {
         var optionSettings = (SaveImageOption)option;
-        var words = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
-        var tagCloudResult = tagCloudCreator.Create(words);
-        if (!tagCloudResult.IsSuccess) return $"Ошибка! {tagCloudResult.Error}\nКартинка не сохранена.";
-        tagCloudResult.Then(tagCloud =>
+        var wordsResult = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
+        if (!wordsResult.IsSuccess) return $"Ошибка! {wordsResult.Error}\nКартинка не сохранена.";
+        return wordsResult.Then(words =>
         {
-            var tagsInCloud = tagCloud.Tags;
-            using var bitmap = GetBitmap(tagsInCloud);
+            var tagCloudResult = tagCloudCreator.Create(words);
+            if (!tagCloudResult.IsSuccess) return $"Ошибка! {tagCloudResult.Error}\nКартинка не сохранена.";
+            tagCloudResult.Then(tagCloud =>
+            {
+                var tagsInCloud = tagCloud.Tags;
+                using var bitmap = GetBitmap(tagsInCloud);
 
-            var path = optionSettings.OutputPngFile;
-            bitmap.Save(path, ImageFormat.Png);
-        });
-        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
+                var path = optionSettings.OutputPngFile;
+                bitmap.Save(path, ImageFormat.Png);
+            });
+            return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
+        }).Value;
     }
 
     private Bitmap GetBitmap(IReadOnlyCollection<StandardWordTag> tagsInCloud)
