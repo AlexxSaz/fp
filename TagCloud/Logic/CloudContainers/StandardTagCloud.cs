@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using ResultTools;
 using TagCloud.Infrastructure;
 using TagCloud.Infrastructure.Tags;
 using TagCloud.Logic.CloudLayouts;
@@ -21,17 +22,18 @@ public class StandardTagCloud(ICloudLayout cloudLayout) : ITagCloud
     {
         var font = new Model.Font(imageSettings.FontFamily, wordSize);
         var frameSize = CalculateWordSize(graphics, word, font);
-        var tagFrame = cloudLayout.PutNextRectangle(frameSize);
-
-        maxRight = Math.Max(maxRight, tagFrame.Right);
-        maxBottom = Math.Max(maxBottom, tagFrame.Bottom);
-        minLeft = Math.Min(minLeft, tagFrame.Left);
-        minTop = Math.Min(minTop, tagFrame.Top);
-
-        var tagLocation = new Model.Point(tagFrame.X + imageSettings.Width / 2,
-            tagFrame.Y + imageSettings.Height / 2);
-
-        Tags.Add(new StandardWordTag(word, font, tagLocation));
+        cloudLayout
+            .PutNextRectangle(frameSize)
+            .Then(frame =>
+            {
+                maxRight = Math.Max(maxRight, frame.Right);
+                maxBottom = Math.Max(maxBottom, frame.Bottom);
+                minLeft = Math.Min(minLeft, frame.Left);
+                minTop = Math.Min(minTop, frame.Top);
+                return new Model.Point(frame.X + imageSettings.Width / 2,
+                    frame.Y + imageSettings.Height / 2);
+            })
+            .Then(location => Tags.Add(new StandardWordTag(word, font, location)));
     }
 
     private static Size CalculateWordSize(Graphics graphics, string word, Model.Font font)

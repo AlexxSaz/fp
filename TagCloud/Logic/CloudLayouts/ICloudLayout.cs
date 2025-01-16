@@ -5,5 +5,5 @@ namespace TagCloud.Logic.CloudLayouts;
 
 public interface ICloudLayout
 {
-    public Rectangle PutNextRectangle(Result<Size> rectangleSize);
+    public Result<Rectangle> PutNextRectangle(Size rectangleSize);
 }

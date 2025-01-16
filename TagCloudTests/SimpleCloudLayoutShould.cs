@@ -38,6 +38,7 @@ public class SimpleCloudLayoutShould
         var actualRectangle = cloudLayout.PutNextRectangle(rectangleSize);
 
         actualRectangle
+            .Value
             .GetCentralPoint()
             .Should()
             .BeEquivalentTo(expectedCenter);
@@ -87,7 +88,8 @@ public class SimpleCloudLayoutShould
         for (var i = 0; i < rectangles.Length; i++)
         for (var j = i + 1; j < rectangles.Length; j++)
             rectangles[i]
-                .IntersectsWith(rectangles[j])
+                .Value
+                .IntersectsWith(rectangles[j].Value)
                 .Should()
                 .BeFalse();
     }
@@ -112,10 +114,10 @@ public class SimpleCloudLayoutShould
             .ToList();
 
         var circleRadius = rectanglesList
-            .Select(rectangle => rectangle.GetCentralPoint())
+            .Select(rectangle => rectangle.Value.GetCentralPoint())
             .Max(pointOnCircle => pointOnCircle.GetDistanceTo(defaultCenter));
 
-        var sumRectanglesSquare = rectanglesList.Sum(rectangle => rectangle.Width * rectangle.Height);
+        var sumRectanglesSquare = rectanglesList.Sum(rectangle => rectangle.Value.Width * rectangle.Value.Height);
         var circleSquare = circleRadius * circleRadius * Math.PI;
         var precision = circleSquare * 0.375;
 
@@ -123,7 +125,7 @@ public class SimpleCloudLayoutShould
             .Should()
             .BeApproximately(sumRectanglesSquare, precision);
     }
-    
+
     private static IEnumerable<Size> GenerateSize()
     {
         var random = new Random();

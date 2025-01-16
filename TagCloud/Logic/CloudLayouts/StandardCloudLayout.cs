@@ -10,7 +10,7 @@ public class StandardCloudLayout : ICloudLayout
 {
     private readonly IEnumerator<Point> pointGeneratorIterator;
     private readonly IPointGenerator[] pointGenerators;
-    private readonly List<Rectangle> rectangles = [];
+    private readonly List<Result<Rectangle>> rectangles = [];
 
     public StandardCloudLayout(ILogicSettingsProvider logicSettingsProvider, IPointGenerator[] currentPointGenerators)
     {
@@ -24,28 +24,33 @@ public class StandardCloudLayout : ICloudLayout
             .GetEnumerator();
     }
 
+    public Result<Rectangle> PutNextRectangle(Size rectangleSize)
+    {
+        var createdRectangle = rectangleSize
+            .AsResult()
+            .Then(IsValidSize)
+            .Then(size =>
+            {
+                Result<Rectangle> newRectangle;
+                do newRectangle = GetNextRectangle(size);
+                while (rectangles.Any(rec => rec.Value.IntersectsWith(newRectangle.Value)));
+                return newRectangle;
+            });
+        
+        rectangles.Add(createdRectangle);
+        return createdRectangle;
+    }
+    
     private IPointGenerator GetPointGenerator(PointGeneratorType pointGeneratorType) =>
         pointGenerators.First(pointGenerator => pointGenerator.PointGeneratorType == pointGeneratorType);
-
-    public Rectangle PutNextRectangle(Result<Size> size)
-    {
-        var newSize = size.Then(IsValidSize).GetValueOrThrow();
-
-        Rectangle newRectangle;
-        do newRectangle = GetNextRectangle(newSize);
-        while (rectangles.Any(rec => rec.IntersectsWith(newRectangle)));
-
-        rectangles.Add(newRectangle);
-        return newRectangle;
-    }
 
     private static Result<Size> IsValidSize(Size size) =>
         size.Width < 1 || size.Height < 1
             ? Result.Fail<Size>($"{nameof(size.Width)} and {nameof(size.Height)} should be greater than zero")
             : Result.Ok(size);
 
-    private Rectangle GetNextRectangle(Size rectangleSize) =>
-        new(GetNextRectangleCenter(rectangleSize), rectangleSize);
+    private Result<Rectangle> GetNextRectangle(Size rectangleSize) =>
+        new Rectangle(GetNextRectangleCenter(rectangleSize), rectangleSize).AsResult();
 
     private Point GetNextRectangleCenter(Size rectangleSize)
     {
