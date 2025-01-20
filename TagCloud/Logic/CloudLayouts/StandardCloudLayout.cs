@@ -3,6 +3,7 @@ using ResultTools;
 using TagCloud.Extensions;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloud.Logic.PointGenerators;
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace TagCloud.Logic.CloudLayouts;
@@ -46,9 +47,11 @@ public class StandardCloudLayout : ICloudLayout
         pointGenerators.First(pointGenerator => pointGenerator.PointGeneratorType == pointGeneratorType);
 
     private static Result<Size> IsValidSize(Size size) =>
-        size.Width < 1 || size.Height < 1
-            ? Result.Fail<Size>($"{nameof(size.Width)} and {nameof(size.Height)} should be greater than zero")
-            : Result.Ok(size);
+        size.Width < 1
+            ? Result.Fail<Size>($"{nameof(size.Width)} should be greater than one")
+            : size.Height < 1
+                ? Result.Fail<Size>($"{nameof(size.Height)} should be greater than one")
+                : size.AsResult();
 
     private Result<Rectangle> GetPlacedRectangle(Size rectangleSize)
     {

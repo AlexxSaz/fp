@@ -1,5 +1,6 @@
 ﻿using ResultTools;
 using TagCloud.Infrastructure.Providers.Interfaces;
+using TagCloud.Logic.PointGenerators;
 
 namespace TagCloud.Infrastructure.Providers;
 
@@ -10,12 +11,18 @@ public class LogicSettingsProvider : ILogicSettingsProvider
     public Result<LogicSettings> GetLogicSettings() => logicSettings;
 
     public void SetLogicSettings(LogicSettings currentLogicSettings) =>
-        logicSettings = currentLogicSettings.AsResult().Then(CheckLogicSettingsValidity);
+        logicSettings = currentLogicSettings
+            .AsResult()
+            .Then(CheckRadiusStepValue)
+            .Then(CheckAngleStepValue);
 
-    private static Result<LogicSettings> CheckLogicSettingsValidity(LogicSettings currentLogicSettings) =>
+    private static Result<LogicSettings> CheckRadiusStepValue(LogicSettings currentLogicSettings) =>
+        currentLogicSettings.RadiusStep <= 0
+            ? Result.Fail<LogicSettings>($"{nameof(currentLogicSettings.RadiusStep)} must be more than zero")
+            : currentLogicSettings.AsResult();
+
+    private static Result<LogicSettings> CheckAngleStepValue(LogicSettings currentLogicSettings) =>
         currentLogicSettings.AngleStep <= 0
-            ? Result.Fail<LogicSettings>("Angle step should be more than zero")
-            : currentLogicSettings.RadiusStep <= 0
-                ? Result.Fail<LogicSettings>("Radius step should be more than zero")
-                : Result.Ok(currentLogicSettings);
+            ? Result.Fail<LogicSettings>($"{nameof(currentLogicSettings.AngleStep)} must be more than zero")
+            : currentLogicSettings.AsResult();
 }

@@ -55,8 +55,10 @@ public class WordTagCloudCreator(
 
     private static Result<ITagCloud> CheckCloudSize(ITagCloud cloud, ImageSettings imageSettings) =>
         cloud.Height > imageSettings.Height
-            ? Result.Fail<ITagCloud>("Image height is too small to place all tags")
+            ? Result.Fail<ITagCloud>(
+                $"Image {nameof(imageSettings.Height)} should be larger than {cloud.Height}")
             : cloud.Width > imageSettings.Width
-                ? Result.Fail<ITagCloud>("Image width is too small to place all tags")
-                : Result.Ok(cloud);
+                ? Result.Fail<ITagCloud>(
+                    $"Image {nameof(imageSettings.Width)} should be larger than {cloud.Width}")
+                : cloud.AsResult();
 }

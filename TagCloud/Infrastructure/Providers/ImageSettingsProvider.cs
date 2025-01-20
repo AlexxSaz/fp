@@ -19,23 +19,24 @@ public class ImageSettingsProvider : IImageSettingsProvider
 
     private static Result<ImageSettings> CheckImageSize(ImageSettings currentImageSettings) =>
         currentImageSettings.Height <= 0
-            ? Result.Fail<ImageSettings>("Height must be greater than zero")
+            ? Result.Fail<ImageSettings>($"{nameof(currentImageSettings.Height)} should be greater than zero")
             : currentImageSettings.Width <= 0
-                ? Result.Fail<ImageSettings>("Width must be greater than zero")
-                : Result.Ok(currentImageSettings);
+                ? Result.Fail<ImageSettings>($"{nameof(currentImageSettings.Width)} should be greater than zero")
+                : currentImageSettings.AsResult();
 
     private static Result<ImageSettings> CheckFontFamily(ImageSettings currentImageSettings)
     {
         var fontCollection = new InstalledFontCollection();
         return fontCollection.Families.Any(family => currentImageSettings.FontFamily.Name == family.Name)
-            ? Result.Ok(currentImageSettings)
-            : Result.Fail<ImageSettings>("Font family not found");
+            ? currentImageSettings.AsResult()
+            : Result.Fail<ImageSettings>("Font family is not found.\nYou can find all available families at " +
+                                         "\"Settings > Personalization > Fonts\"");
     }
 
     private static Result<ImageSettings> CheckFontSize(ImageSettings currentImageSettings) =>
         currentImageSettings.MaxFontSize <= 0
-            ? Result.Fail<ImageSettings>("Max font size must be greater than zero")
+            ? Result.Fail<ImageSettings>($"{nameof(currentImageSettings.MaxFontSize)} should be greater than zero")
             : currentImageSettings.MinFontSize <= 0
-                ? Result.Fail<ImageSettings>("Min font size must be greater than zero")
+                ? Result.Fail<ImageSettings>($"{nameof(currentImageSettings.MinFontSize)} should be greater than zero")
                 : Result.Ok(currentImageSettings);
 }

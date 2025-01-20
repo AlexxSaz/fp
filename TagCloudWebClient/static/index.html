@@ -220,6 +220,7 @@
                 <td class="property-cell"><span>Tag Cloud Shape</span></td>
                 <td class="property-cell">
                     <select id="tagCloudShape-property">
+                        <option value="0">None</option>
                         <option value="1">Spiral</option>
                         <option value="2">Astroid</option>
                     </select>
@@ -280,7 +281,6 @@
                 method: "PUT", credentials: "same-origin",
                 body: JSON.stringify(obj)
             });
-            console.log(response.status)
             if (response.ok) {
                 return response.json();
             }
@@ -355,8 +355,6 @@
                     draw(words)
                 })
                 .catch(error => {
-                    console.log(error)
-                    
                     if (error.message) {
                         showErrorModal(error.message);
                     } else {
@@ -366,7 +364,6 @@
         };
 
         reader.onerror = (error) => {
-            console.log("опа" + error)
             showErrorModal("Ошибка чтения файла: " + error);
         };
 
@@ -380,7 +377,6 @@
         clearCanvas();
         fillBackgroundColor();
         let fontColor = hexToRgb(fontColorInput.value);
-        console.log(words);        
         words.forEach(word => {
             ctx.font = `${word.Font.Size}px ${word.Font.Family.Name}`;
             ctx.fillStyle = `rgb(${fontColor.R},${fontColor.G},${fontColor.B})`;
