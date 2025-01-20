@@ -24,7 +24,7 @@ public class SimpleCloudLayoutShould
         var logicSettingsToSet = new LogicSettings();
         logicSettingsToSet = logicSettingsToSet with { Center = new Size(expectedCenter) };
         logicSettingsProvider.SetLogicSettings(logicSettingsToSet);
-        var logicSettings = logicSettingsProvider.GetLogicSettings();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
@@ -47,10 +47,10 @@ public class SimpleCloudLayoutShould
     [TestCase(-1, 1)]
     [TestCase(1, -1)]
     [TestCase(0, 0)]
-    public void PutNextRectangle_ThrowArgumentOutOfRangeException_AfterExecutionWith(int width, int height)
+    public void PutNextRectangle_ResultIsNotSuccess_AfterExecutionWith(int width, int height)
     {
         var rectangleSize = new Size(width, height);
-        var logicSettings = logicSettingsProvider.GetLogicSettings();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
@@ -62,9 +62,7 @@ public class SimpleCloudLayoutShould
             circularCloudLayout
                 .PutNextRectangle(rectangleSize);
 
-        executePutNewRectangle
-            .Should()
-            .Throw<InvalidOperationException>();
+        executePutNewRectangle.Invoke().IsSuccess.Should().BeFalse();
     }
 
     [Test]
@@ -73,7 +71,7 @@ public class SimpleCloudLayoutShould
     {
         var rectangleSizes = GenerateSize()
             .Take(random.Next(10, 200));
-        var logicSettings = logicSettingsProvider.GetLogicSettings();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),
@@ -87,11 +85,7 @@ public class SimpleCloudLayoutShould
 
         for (var i = 0; i < rectangles.Length; i++)
         for (var j = i + 1; j < rectangles.Length; j++)
-            rectangles[i]
-                .Value
-                .IntersectsWith(rectangles[j].Value)
-                .Should()
-                .BeFalse();
+            rectangles[i].Value.IntersectsWith(rectangles[j].Value).Should().BeFalse();
     }
 
     [Test]
@@ -100,7 +94,7 @@ public class SimpleCloudLayoutShould
     {
         var rectangleSizes = GenerateSize()
             .Take(random.Next(100, 200));
-        var logicSettings = logicSettingsProvider.GetLogicSettings();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         IPointGenerator[] pointGenerators =
         [
             new SpiralPointGenerator(logicSettings),

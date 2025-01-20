@@ -15,12 +15,12 @@ public class WordSizeCalculatorShould
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public void Calculate_ShouldReturnStringsWithSize_AfterExecutionWithOneWordCollection()
     {
-        var imageSettings = imageSettingsProvider.GetImageSettings();
-        var wordSizeCalculator = new WordSizeCalculator(imageSettingsProvider);
+        var imageSettings = imageSettingsProvider.GetImageSettings().Value;
+        var wordSizeCalculator = new WordSizeCalculator();
         var oneWordCollection = Enumerable.Repeat("ясно", 6);
         var expectedNumberOfWords = oneWordCollection.GroupBy(x => x).Count();
 
-        var wordFrequencyDictionary = wordSizeCalculator.Calculate(oneWordCollection);
+        var wordFrequencyDictionary = wordSizeCalculator.Calculate(oneWordCollection, imageSettings);
 
         using var _ = new AssertionScope();
         wordFrequencyDictionary.Count.Should().Be(expectedNumberOfWords);

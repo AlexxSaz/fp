@@ -4,6 +4,6 @@ namespace TagCloud.Infrastructure.Providers.Interfaces;
 
 public interface IImageSettingsProvider
 {
-    ImageSettings GetImageSettings();
-    void SetImageSettings(Result<ImageSettings> currentImageSettings);
+    Result<ImageSettings> GetImageSettings();
+    void SetImageSettings(ImageSettings currentImageSettings);
 }

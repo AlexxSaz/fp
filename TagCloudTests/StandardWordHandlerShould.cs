@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using TagCloud.Infrastructure.Providers;
 using TagCloud.WordHandlers;
 using TagCloudReader.Readers;
 
@@ -21,13 +22,15 @@ public class StandardWordHandlerShould
     [Test]
     public void Handle_ReturnWordsInLowerCase_AfterExecutionWithUpperCaseWords()
     {
+        var logicSettingsProvider = new LogicSettingsProvider();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         var wordHandler = new StandardWordHandler(Reader);
         var expectedUpperCaseWords = new HashSet<string>
         {
             "ясно", "понятно", "слово", "два", "двадцатьдва"
         };
 
-        var handledWords = wordHandler.Handle(UpperCaseWords).ToHashSet();
+        var handledWords = wordHandler.Handle(UpperCaseWords, logicSettings).ToHashSet();
 
         handledWords.Should().BeEquivalentTo(expectedUpperCaseWords);
     }
@@ -35,13 +38,15 @@ public class StandardWordHandlerShould
     [Test]
     public void Handle_ExcludeBoringWords_AfterExecution()
     {
+        var logicSettingsProvider = new LogicSettingsProvider();
+        var logicSettings = logicSettingsProvider.GetLogicSettings().Value;
         var wordHandler = new StandardWordHandler(Reader);
         var expectedGoodWords = new HashSet<string>
         {
             "привет", "мир", "контур", "компания", "лучшая"
         };
 
-        var handledWords = wordHandler.Handle(TestWords).ToHashSet();
+        var handledWords = wordHandler.Handle(TestWords, logicSettings).ToHashSet();
 
         handledWords.Should().BeEquivalentTo(expectedGoodWords);
     }

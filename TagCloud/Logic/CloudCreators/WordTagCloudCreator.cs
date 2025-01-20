@@ -11,6 +11,7 @@ namespace TagCloud.Logic.CloudCreators;
 
 public class WordTagCloudCreator(
     IImageSettingsProvider imageSettingsProvider,
+    ILogicSettingsProvider logicSettingsProvider,
     IWordHandler[] wordHandlers,
     ISizeCalculator sizeCalculator,
     Func<ITagCloud> tagCloudFactory) : ITagCloudCreator
@@ -18,8 +19,9 @@ public class WordTagCloudCreator(
     public Result<ITagCloud> Create(IEnumerable<string> words)
     {
         var tagCloud = tagCloudFactory();
-        var imageSettings = imageSettingsProvider.GetImageSettings();
-        return PrepareTagCloud(tagCloud, words, imageSettings).Then(cloud => cloud);
+        var imageSettingsResult = imageSettingsProvider.GetImageSettings();
+        return imageSettingsResult.Then(imageSettings =>
+            PrepareTagCloud(tagCloud, words, imageSettings).Then(cloud => cloud));
     }
 
     private Result<ITagCloud> PrepareTagCloud(ITagCloud tagCloud, IEnumerable<string> words,
@@ -30,21 +32,25 @@ public class WordTagCloudCreator(
             .Then(cloud => CheckCloudSize(cloud, imageSettings));
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    private ITagCloud FillCloud(ITagCloud tagCloud, IEnumerable<string> words, ImageSettings imageSettings)
+    private Result<ITagCloud> FillCloud(ITagCloud tagCloud, IEnumerable<string> words, ImageSettings imageSettings)
     {
-        using var bitmap = new Bitmap(
-            imageSettings.Width,
-            imageSettings.Height);
-        using var graphics = Graphics.FromImage(bitmap);
+        var logicSettingsResult = logicSettingsProvider.GetLogicSettings();
 
-        var handledWords = wordHandlers.Aggregate(words, (current, handler) =>
-            handler.Handle(current));
-        var wordSizeDictionary = sizeCalculator.Calculate(handledWords);
-        handledWords = handledWords.Distinct();
-        foreach (var word in handledWords)
-            tagCloud.AddTag(word, wordSizeDictionary[word], imageSettings, graphics);
+        return logicSettingsResult.Then(logicSettings =>
+        {
+            using var bitmap = new Bitmap(
+                imageSettings.Width,
+                imageSettings.Height);
+            using var graphics = Graphics.FromImage(bitmap);
+            var handledWords = wordHandlers.Aggregate(words, (current, handler) =>
+                handler.Handle(current, logicSettings));
+            var wordSizeDictionary = sizeCalculator.Calculate(handledWords, imageSettings);
+            handledWords = handledWords.Distinct();
+            foreach (var word in handledWords)
+                tagCloud.AddTag(word, wordSizeDictionary[word], imageSettings, graphics);
 
-        return tagCloud;
+            return tagCloud;
+        });
     }
 
     private static Result<ITagCloud> CheckCloudSize(ITagCloud cloud, ImageSettings imageSettings) =>

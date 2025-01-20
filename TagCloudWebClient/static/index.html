@@ -280,7 +280,7 @@
                 method: "PUT", credentials: "same-origin",
                 body: JSON.stringify(obj)
             });
-
+            console.log(response.status)
             if (response.ok) {
                 return response.json();
             }
@@ -296,7 +296,7 @@
             const response = await fetch(url, {
                 method: "POST", credentials: "same-origin",
                 body: JSON.stringify(obj)
-            });
+            });            
             if (response.ok) {
                 return response.json();
             }
@@ -352,14 +352,11 @@
             }            
             post("/getWords", fileContent) 
                 .then(words => {
-                    if (words.Message === undefined) {
-                        draw(words);
-                    }
-                    else {
-                        showErrorModal(words.Message);
-                    }
+                    draw(words)
                 })
                 .catch(error => {
+                    console.log(error)
+                    
                     if (error.message) {
                         showErrorModal(error.message);
                     } else {
@@ -369,6 +366,7 @@
         };
 
         reader.onerror = (error) => {
+            console.log("опа" + error)
             showErrorModal("Ошибка чтения файла: " + error);
         };
 

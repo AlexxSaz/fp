@@ -1,13 +1,13 @@
-﻿using TagCloud.Infrastructure.Providers.Interfaces;
+﻿using TagCloud.Infrastructure;
+using TagCloud.Infrastructure.Providers.Interfaces;
 
 namespace TagCloud.Calculators;
 
-public class WordSizeCalculator(IImageSettingsProvider imageSettingsProvider) : ISizeCalculator
+public class WordSizeCalculator : ISizeCalculator
 {
-    public IReadOnlyDictionary<string, int> Calculate(IEnumerable<string> words)
+    public IReadOnlyDictionary<string, int> Calculate(IEnumerable<string> words, ImageSettings imageSettings)
     {
         var dictionaryWithWordFrequency = GetDictionaryWithWordFrequency(words);
-        var imageSettings = imageSettingsProvider.GetImageSettings();
         var maxFrequency = dictionaryWithWordFrequency.Values.Max();
 
         var result = new Dictionary<string, int>();

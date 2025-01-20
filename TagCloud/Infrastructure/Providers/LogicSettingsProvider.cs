@@ -5,12 +5,12 @@ namespace TagCloud.Infrastructure.Providers;
 
 public class LogicSettingsProvider : ILogicSettingsProvider
 {
-    private LogicSettings logicSettings = new();
+    private Result<LogicSettings> logicSettings = new LogicSettings().AsResult();
 
-    public LogicSettings GetLogicSettings() => logicSettings;
+    public Result<LogicSettings> GetLogicSettings() => logicSettings;
 
-    public void SetLogicSettings(Result<LogicSettings> currentLogicSettings) =>
-        logicSettings = currentLogicSettings.Then(CheckLogicSettingsValidity).GetValueOrThrow();
+    public void SetLogicSettings(LogicSettings currentLogicSettings) =>
+        logicSettings = currentLogicSettings.AsResult().Then(CheckLogicSettingsValidity);
 
     private static Result<LogicSettings> CheckLogicSettingsValidity(LogicSettings currentLogicSettings) =>
         currentLogicSettings.AngleStep <= 0

@@ -3,6 +3,7 @@ using System.Drawing.Imaging;
 using ResultTools;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloud.Infrastructure.Tags;
+using TagCloud.Logic.CloudContainers;
 using TagCloud.Logic.CloudCreators;
 using TagCloudConsoleClient.Options;
 using TagCloudReader.Readers;
@@ -22,43 +23,56 @@ public class SaveImageAction(
     {
         var optionSettings = (SaveImageOption)option;
         var wordsResult = wordsReader.ReadFromTxt(optionSettings.InputTxtFile);
-        if (!wordsResult.IsSuccess) return $"Ошибка! {wordsResult.Error}\nКартинка не сохранена.";
-        return wordsResult.Then(words =>
-        {
-            var tagCloudResult = tagCloudCreator.Create(words);
-            if (!tagCloudResult.IsSuccess) return $"Ошибка! {tagCloudResult.Error}\nКартинка не сохранена.";
-            tagCloudResult.Then(tagCloud =>
-            {
-                var tagsInCloud = tagCloud.Tags;
-                using var bitmap = GetBitmap(tagsInCloud);
 
-                var path = optionSettings.OutputPngFile;
-                bitmap.Save(path, ImageFormat.Png);
-            });
-            return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
-        }).Value;
+        Result<ITagCloud> cloudResult;
+        if (wordsResult.IsSuccess)
+            cloudResult = wordsResult.Then(tagCloudCreator.Create);
+        else
+            return $"Ошибка! {wordsResult.Error}\nКартинка не сохранена.";
+
+        if (!cloudResult.IsSuccess) return $"Ошибка! {cloudResult.Error}\nКартинка не сохранена.";
+
+        var bitmapResult = cloudResult.Then(tagCloud =>
+        {
+            var tagsInCloud = tagCloud.Tags;
+            return GetBitmap(tagsInCloud);
+        });
+        
+        if (!bitmapResult.IsSuccess) return $"Ошибка! {bitmapResult.Error}\nКартинка не сохранена.";
+
+        bitmapResult.Then(bitmap =>
+        {
+            var path = optionSettings.OutputPngFile;
+            bitmap.Save(path, ImageFormat.Png);
+        });
+        
+        return $"Картинка сохранена с именем {optionSettings.OutputPngFile}";
     }
 
-    private Bitmap GetBitmap(IReadOnlyCollection<StandardWordTag> tagsInCloud)
+    private Result<Bitmap> GetBitmap(IReadOnlyCollection<StandardWordTag> tagsInCloud)
     {
-        var imageSettings = imageSettingsProvider.GetImageSettings();
+        var imageSettingsResult = imageSettingsProvider.GetImageSettings();
         var palette = paletteProvider.GetPalette();
         const int rectangleOutline = 1;
-        var bitmap = new Bitmap(
-            imageSettings.Width + rectangleOutline,
-            imageSettings.Height + rectangleOutline);
-        using var graphics = Graphics.FromImage(bitmap);
-        var fontColor = palette.FontColor;
-        var backgroundColor = palette.BackgroundColor;
-        graphics.Clear(backgroundColor);
-        using var brush = new SolidBrush(fontColor);
 
-        foreach (var tag in tagsInCloud)
+        return imageSettingsResult.Then(imageSettings =>
         {
-            using var font = new Font(tag.Font.Family, tag.Font.Size);
-            graphics.DrawString(tag.Value, font, brush, tag.Location.X, tag.Location.Y);
-        }
+            var bitmap = new Bitmap(
+                imageSettings.Width + rectangleOutline,
+                imageSettings.Height + rectangleOutline);
+            using var graphics = Graphics.FromImage(bitmap);
+            var fontColor = palette.FontColor;
+            var backgroundColor = palette.BackgroundColor;
+            graphics.Clear(backgroundColor);
+            using var brush = new SolidBrush(fontColor);
 
-        return bitmap;
+            foreach (var tag in tagsInCloud)
+            {
+                using var font = new Font(tag.Font.Family, tag.Font.Size);
+                graphics.DrawString(tag.Value, font, brush, tag.Location.X, tag.Location.Y);
+            }
+
+            return bitmap;
+        });
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using ResultTools;
+using TagCloud.Logic.CloudContainers;
 using TagCloud.Logic.CloudCreators;
 using TagCloudReader.Readers;
 using TagCloudWebClient.JsonConverters;
@@ -22,23 +23,26 @@ public class GetWordsAction(
     {
         var wordContainer = JsonSerializer.Deserialize<WordContainer>(inputStream);
         var wordsResult = reader.ReadFromString(wordContainer!.Words);
+        Result<ITagCloud> cloudResult;
         if (wordsResult.IsSuccess)
-            return wordsResult.Then(words => SerializeAndGetCode(words, outputStream)).Value;
-        JsonSerializer.SerializeAsync(outputStream, new ResultError(wordsResult.Error));
-        return (int)HttpStatusCode.InternalServerError;
+            cloudResult = wordsResult.Then(words => SerializeAndGetCloud(words, outputStream));
+        else
+            throw new InvalidDataException(wordsResult.Error);
+
+        if (cloudResult.IsSuccess)
+            return (int)HttpStatusCode.OK;
+
+        throw new InvalidDataException(cloudResult.Error);
     }
 
-    private int SerializeAndGetCode(IEnumerable<string> words, Stream outputStream)
+    private Result<ITagCloud> SerializeAndGetCloud(IEnumerable<string> words, Stream outputStream)
     {
         var tagCloudResult = tagCloudCreator.Create(words);
-        if (!tagCloudResult.IsSuccess)
-        {
-            JsonSerializer.SerializeAsync(outputStream, new ResultError(tagCloudResult.Error));
-            return (int)HttpStatusCode.InternalServerError;
-        }
 
-        tagCloudResult.Then(tagCloud =>
-            JsonSerializer.Serialize(outputStream, tagCloud.Tags, options: jsonSerializerOptions));
-        return (int)HttpStatusCode.OK;
+        return tagCloudResult.Then(tagCloud =>
+        {
+            JsonSerializer.Serialize(outputStream, tagCloud.Tags, options: jsonSerializerOptions);
+            return tagCloud;
+        });
     }
 }

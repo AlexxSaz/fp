@@ -21,7 +21,7 @@ public class PointGeneratorShould
         var logicSettingsToSet = new LogicSettings();
         logicSettingsToSet = logicSettingsToSet with { PointGeneratorType = pointGeneratorType };
         LogicSettingsProvider.SetLogicSettings(logicSettingsToSet);
-        var logicSettings = LogicSettingsProvider.GetLogicSettings();
+        var logicSettings = LogicSettingsProvider.GetLogicSettings().Value;
         var pointGenerator = new SpiralPointGenerator(logicSettings);
         using var newPointIterator = pointGenerator
             .GeneratePoint()
@@ -69,8 +69,8 @@ public class PointGeneratorShould
     private static IPointGenerator GetPointGenerator(PointGeneratorType pointGeneratorType) =>
         pointGeneratorType switch
         {
-            PointGeneratorType.Spiral => new SpiralPointGenerator(LogicSettingsProvider.GetLogicSettings()),
-            PointGeneratorType.Astroid => new AstroidPointGenerator(LogicSettingsProvider.GetLogicSettings()),
+            PointGeneratorType.Spiral => new SpiralPointGenerator(LogicSettingsProvider.GetLogicSettings().Value),
+            PointGeneratorType.Astroid => new AstroidPointGenerator(LogicSettingsProvider.GetLogicSettings().Value),
             _ => throw new ArgumentOutOfRangeException(nameof(pointGeneratorType), pointGeneratorType, null)
         };
 }

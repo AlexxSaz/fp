@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using ResultTools;
 using TagCloud.Infrastructure;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloudWebClient.JsonConverters;
@@ -18,9 +19,13 @@ public class UpdateImageSettingsAction(IImageSettingsProvider imageSettingsProvi
     {
         var updatedSettings = JsonSerializer.Deserialize<ImageSettings>(inputStream, jsonSerializerOptions);
         if (updatedSettings != null) imageSettingsProvider.SetImageSettings(updatedSettings);
-        var settings = imageSettingsProvider.GetImageSettings();
-        JsonSerializer.Serialize(outputStream, settings);
+        var settingsResult = imageSettingsProvider.GetImageSettings();
+        if (settingsResult.IsSuccess)
+        {
+            settingsResult.Then(settings => JsonSerializer.Serialize(outputStream, settings));
+            return (int)HttpStatusCode.OK;
+        }
 
-        return (int)HttpStatusCode.OK;
+        throw new Exception(settingsResult.Error);
     }
 }

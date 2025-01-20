@@ -6,16 +6,16 @@ namespace TagCloud.Infrastructure.Providers;
 
 public class ImageSettingsProvider : IImageSettingsProvider
 {
-    private ImageSettings imageSettings = new();
+    private Result<ImageSettings> imageSettings = new ImageSettings().AsResult();
 
-    public ImageSettings GetImageSettings() => imageSettings;
+    public Result<ImageSettings> GetImageSettings() => imageSettings;
 
-    public void SetImageSettings(Result<ImageSettings> currentImageSettings) =>
+    public void SetImageSettings(ImageSettings currentImageSettings) =>
         imageSettings = currentImageSettings
+            .AsResult()
             .Then(CheckImageSize)
             .Then(CheckFontFamily)
-            .Then(CheckFontSize)
-            .GetValueOrThrow();
+            .Then(CheckFontSize);
 
     private static Result<ImageSettings> CheckImageSize(ImageSettings currentImageSettings) =>
         currentImageSettings.Height <= 0
@@ -27,7 +27,7 @@ public class ImageSettingsProvider : IImageSettingsProvider
     private static Result<ImageSettings> CheckFontFamily(ImageSettings currentImageSettings)
     {
         var fontCollection = new InstalledFontCollection();
-        return fontCollection.Families.Any(family => currentImageSettings.FontFamily.Equals(family))
+        return fontCollection.Families.Any(family => currentImageSettings.FontFamily.Name == family.Name)
             ? Result.Ok(currentImageSettings)
             : Result.Fail<ImageSettings>("Font family not found");
     }

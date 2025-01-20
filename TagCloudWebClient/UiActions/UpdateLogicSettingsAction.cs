@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using ResultTools;
 using TagCloud.Infrastructure;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloudWebClient.JsonConverters;
@@ -18,9 +19,14 @@ public class UpdateLogicSettingsAction(ILogicSettingsProvider logicSettingsProvi
     {
         var updatedSettings = JsonSerializer.Deserialize<LogicSettings>(inputStream, options: jsonSerializerOptions);
         if (updatedSettings != null) logicSettingsProvider.SetLogicSettings(updatedSettings);
-        var settings = logicSettingsProvider.GetLogicSettings();
-        JsonSerializer.Serialize(outputStream, settings, options: jsonSerializerOptions);
+        var settingsResult = logicSettingsProvider.GetLogicSettings();
+        if (settingsResult.IsSuccess)
+        {
+            settingsResult.Then(settings =>
+                JsonSerializer.Serialize(outputStream, settings, options: jsonSerializerOptions));
+            return (int)HttpStatusCode.OK;
+        }
 
-        return (int)HttpStatusCode.OK;
+        throw new Exception(settingsResult.Error);
     }
 }

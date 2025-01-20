@@ -1,4 +1,5 @@
-﻿using TagCloud.Infrastructure;
+﻿using ResultTools;
+using TagCloud.Infrastructure;
 using TagCloud.Infrastructure.Providers.Interfaces;
 using TagCloudConsoleClient.Options;
 
@@ -12,9 +13,15 @@ public class LogicSettingsAction(ILogicSettingsProvider logicSettingsProvider)
     public string Perform(IOption option)
     {
         var optionSettings = (LogicSettingsOption)option;
-        var logicSettings = logicSettingsProvider.GetLogicSettings();
-        var currentLogicSettings = CreateLogicSetting(optionSettings, logicSettings);
-        logicSettingsProvider.SetLogicSettings(currentLogicSettings);
+        var logicSettingsResult = logicSettingsProvider.GetLogicSettings();
+        if (!logicSettingsResult.IsSuccess) return $"Ошибка! {logicSettingsResult.Error}\nНастройки не применены.";
+        
+        logicSettingsResult.Then(logicSettings =>
+        {
+            var currentLogicSettings = CreateLogicSetting(optionSettings, logicSettings);
+            logicSettingsProvider.SetLogicSettings(currentLogicSettings);
+        });
+
         return $"Настройки логики изменены.\n" +
                $"Шаг угола {optionSettings.AngleStep}, шаг радиуса {optionSettings.RadiusStep}.\n" +
                $"Форма генерации точек: {optionSettings.PointGeneratorType}.\n" +
